@@ -1,0 +1,32 @@
+# Automatically-generated njb configuration file.
+
+# The following two values will NEED to be set before you can juse njb:
+
+# The URL that points to the directory where your index file will be.
+# This is probably something like http://www.yourdomain/blog
+HTTP_ROOT=
+# The directory on the filesystem that corresponds to the URL above.
+# This is probably something like /home/you/public_html/blog
+HTTP_DIR=
+
+# The following values will work just fine left to their defaults.
+
+# The number of posts to be previewed on the index page.
+INDEX_PREVIEWS=5
+# The maximum length in characters of each preview.
+PREVIEW_LENGTH=240
+# The maximum length in characters of a post's title as it appears in
+# one of the <- previous post or next post -> links.
+LINK_TITLE_LENGTH=32
+# The way datetimes should be displayed. This follows os.date() and thus
+# C's strftime() format.
+DISPLAY_TIME_FORMAT=%b %d, %I:%M %p
+
+# If you want to use a different markdown renderer than the default, or
+# use it with different options, you can uncomment and change this option.
+# MARKDOWN_COMMAND=<!-- ##MARKDOWN_COMMAND## -->
+
+# If you want to use a different editor than your $EDITOR environment
+# variable (or if $EDITOR is not set) when you generate a new post file,
+# set that here.
+# EDITOR=/bin/nano
