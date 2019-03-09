@@ -128,7 +128,7 @@ end
 modt.afile_lines = function(fname, tab, sep, pat)
     local p = pat or modt.pattern
     local v = sep or modt.separator
-    local vp = '([^' .. v .. ']+):(.*)'
+    local vp = '([^' .. v .. ']+)' .. v .. '(.*)'
     
     local function subf(fall, part)
         r = afsub_aux(tab, part, vp)
@@ -165,7 +165,7 @@ end
 modt.afile_iter = function(fname, tab, sep, pat)
     local p = pat or modt.pattern
     local v = sep or modt.separator
-    local vp = '([^' .. v .. ']+):(.*)'
+    local vp = '([^' .. v .. ']+)' .. v .. '(.*)'
     
     local function subf(all, part)
         r = afsub_aux(tab, part, vp)

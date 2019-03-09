@@ -454,6 +454,7 @@ modt.write_index = function(posts, post_order)
                 end
             end
         end
+        return ''
     end
     
     local subt = {
@@ -514,7 +515,11 @@ local function write_history_list(posts, post_order, open_file)
         cur_mo   = ptimet.month
     end
     
-    open_file:write('</ul></li></ul>\n')
+    open_file:write(
+[[        </ul></li>
+    </ul></li>
+</ul>
+]])
 end
 
 modt.write_history = function(posts, post_order)
@@ -527,6 +532,7 @@ modt.write_history = function(posts, post_order)
 
     local function meat_func()
         write_history_list(posts, post_order, f)
+        return ''
     end
     
     local subt = {
