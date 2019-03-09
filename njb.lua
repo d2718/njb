@@ -10,7 +10,7 @@
     last update: 2019-03-07
 --]]
 
-local NJB_MODS_DIR = '/home/dan/dev/njb/njb_mods/?.lua'
+local NJB_MODS_DIR = '/usr/local/etc/njb/njb_mods/?.lua'
 
 if NJB_MODS_DIR then
     package.path = package.path .. ';' .. NJB_MODS_DIR
@@ -148,6 +148,9 @@ where OPTION is one of
 
     -l, --list
         list all posts, titles, and times
+
+    -n TOKEN, --new TOKEN
+    	create a new post
     
     -u, --update
         update all posts modified since the last update
