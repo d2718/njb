@@ -4,7 +4,48 @@
 
     a module for processing text templates
     
-    2019-03-02
+    2019-03-09
+    
+    Each of the exported functions takes at least a source and a table
+    as arguments. The source might be a string or a filename (which,
+    technically is _also_ a string, but not the one that gets processed).
+    The source is processed, looking for instances of the pattern,
+    looking up the inner match of the pattern in the table. If the string
+    of the inner match is a key in the table, the pattern is replaced:
+      * If the value is a string, by the string.
+      * If the value is a _function_, by calling the function with the
+        inner match as the argument.
+        
+    For example, templater.string(s, t) would, if it encountered
+    
+    <!-- ##FROGS## -->
+    
+    in the string s, look for t['FROGS']. If t['FROGS'] were a string,
+    <!-- ##FROGS## --> would get replaced by that string. If t['FROGS']
+    were a function f, <!-- ##FROGS## --> would get replaced by the
+    return value of calling f('FROGS').
+    
+    In the exported functions with a prepended "a" (astring, etc.), the
+    substitution dispatch is slightly different:
+      * If the inner match contains a colon (or other specified separator),
+        the text before the separator is used as a key in the table,
+        and the value will be assumed a function, and called with the
+        text _after_ the separator as an argument.
+      * If the separator is not present in the inner match, then the
+        value from the table will be directly substituted.
+    
+    For example, templater.astring(s, t) would, if it encountered
+    
+    <!-- ##FROGS## -->
+    
+    behave just like templater.string(s, t), but would assume that
+    t['FROGS'] were a string (if it's not, it'll barf). If it encountered
+    
+    <!-- ##FROGS:blue## -->
+    
+    it would assume t['FROGS'] were a function f, and substitute in the
+    return value of calling f('blue').
+    
 --]]
 
 local modt = {}
@@ -28,16 +69,12 @@ local function rpt(fmtstr, ...)
 end
 
 local function sub_aux(tab, chunk)
-    -- rpt('sub_aux(..., %q) called', chunk)
     local v = tab[chunk]
     if type(v) == 'string' then
-        -- rpt('    tab[%q] is a string: %q', chunk, v)
         return v
     elseif type(v) == 'function' then
-        -- rpt('   tab[%q] is a function', chunk)
         return v(chunk)
     elseif type(v) == 'nil' then
-        -- rpt('   tab[%q] is nil', chunk)
         return nil
     else
         if modt.errors then
@@ -49,7 +86,6 @@ end
 
 modt.string = function(s, tab, pat)
     local p = pat or modt.pattern
-    -- rpt('pattern is |%s|', p)
     
     local function f(all, part)
         r = sub_aux(tab, part)

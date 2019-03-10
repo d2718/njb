@@ -4,7 +4,7 @@
     Module for dealing with posts. This is where the meat of the
     functionality is.
     
-    updated 2019-03-08
+    updated 2019-03-09
 --]]
 
 local dconfig   = require 'dconfig'
@@ -14,12 +14,24 @@ local templater = require 'templater'
 
 local modt = {}
 
+-- For matching "name: value" pairs in post headers.
 local HEADER_PATTERN = '^%s*([^:]+)%s*:%s*(.-)%s*$'
+-- How we store times in unambiguous textual format around here.
 local INTERNAL_TIME  = '%Y-%m-%d %H:%M:%S'
 modt.INTERNAL_TIME = INTERNAL_TIME
+-- How we read times from said unambiguous textual format.
 local TIME_PATTERN   = '(%d+)%-(%d+)%-(%d+)%s+(%d+):(%d+):?(%d*)'
-local TEMP_FILENAME  = 'temp_markdown_output'
+-- Because Lua can't both read from and write to the same subprocess, we
+-- need a place to stash markdown that's been rendered into HTML. This is
+-- the name of that stash.
+local TEMP_FILENAME  = '.temp_markdown_output'
+-- This file gets rewritten to with every call to "njb -u" or "njb -f"
+-- so that njb can tell which files have been changed since. The text in
+-- the file is the time of the update, but that's just for show because
+-- njb reads the file modification time.
+local update_time_fname = '.last_update'
 
+-- These are all configuration file options.
 local http_root = nil
 local http_dir  = nil
 local index_previews = 5
@@ -27,11 +39,10 @@ local preview_length = 240
 local link_title_length = 32
 local display_time_format  = '%b %d, %I:%M %p'
 local css_href = ''
-local update_time_fname = '.last_update'
-
 local editor = nil
 local markdown_command = nil
 
+-- This turns a string in the INTERNAL_TIME format into a *nixy time.
 local function parse_intl_time(tstr)
     local ys, mos, ds, hs, mis, ss = tstr:match(TIME_PATTERN)
     
@@ -49,6 +60,7 @@ local function parse_intl_time(tstr)
     return os.time(t)
 end
 
+-- Ensures the provided path ends it ".md".
 local function ensure_md_extension(path)
     local ext = util.file_extension(path)
     if ext == 'md' then
@@ -60,18 +72,15 @@ local function ensure_md_extension(path)
     end
 end
 
+-- Strips out (or possibly just mangles irrevocably) HTML tags. Pay no
+-- attention to the man behind this SO answer:
+-- https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags/1732454#1732454
 local function strip_html_tags(s)
     return s:gsub('<[^>]->', '')
 end
 
---~ local function path_join(a, b)
-    --~ if (a:sub(#a, #a) == '/') or (b:sub(1, 1) == '/') then
-        --~ return a .. b
-    --~ else
-        --~ return string.format('%s/%s', a, b)
-    --~ end
---~ end
-
+-- Initializes the module with the user's configured settings. You must
+-- call this with the table returned by requiring 'njb_config'.
 modt.init = function(cfgt)
     dconfig.init()
     dconfig.add_str('HTTP_ROOT',   nil, { TRIM=true })
@@ -170,6 +179,7 @@ modt.init = function(cfgt)
     return nil
 end
 
+-- Return the last time the user ran njb with the -u or -f options.
 local function get_update_time()
     local ut, err = util.last_modified(update_time_fname)
     if err then
@@ -179,6 +189,7 @@ local function get_update_time()
     return ut, err
 end
 
+-- Set the last update time (for when the user runs njb with -u or -f).
 local function set_update_time()
     local f, err = io.open(update_time_fname, 'w')
     if not f then
@@ -192,6 +203,8 @@ local function set_update_time()
     return nil
 end
 
+-- Given the freshly-opened file handle of a post file, this will return
+-- a { ['key'] = 'value' } table of all the "key: value" headers in the post.
 modt.read_headers = function(open_file)
     local h = {}
     local line = open_file:read('*line')
@@ -205,6 +218,8 @@ modt.read_headers = function(open_file)
     return h
 end
 
+-- Returns the closest thing we get to a "post struct" given a post filename.
+-- It's pretty clear from the code below what the format is.
 modt.get_post_info = function(fname)
     local f, err = io.open(fname, 'r')
     if not f then
@@ -236,6 +251,8 @@ modt.get_post_info = function(fname)
     end
 end
 
+-- Return a table mapping post identifiers to post objects (see get_post_info()
+-- above) for all the posts in the blog.
 modt.get_posts = function()
     local mdflist, err = util.ls('posts/')
     if err then return nil, err end
@@ -253,6 +270,9 @@ modt.get_posts = function()
     return post_files
 end
 
+-- Given a { ['identifier'] = post_object } table (as returned by get_posts()
+-- above), supplies an array of the post identifiers in reverse chronological
+-- order (that is, most recent first).
 modt.post_order = function(posts)
     local tags = {}
     for k, _ in pairs(posts) do table.insert(tags, k) end
@@ -262,6 +282,14 @@ modt.post_order = function(posts)
     return tags
 end
 
+-- Create a new post, given an identifier.
+--   * Create a posts/identifier.md file
+--   * Give it a skeleton header populated with a blank title: and the
+--     current time:
+--   * If the user has an editor configured, open that editor so the post
+--     can be written, and render the new post upon quitting the editor.
+--     If no editor is configured, print a message informing the user of
+--     the new filename and what to do.
 modt.new_post = function(tag)
     local fname = string.format('posts/%s', ensure_md_extension(tag))
     if util.exists(fname) then
@@ -309,6 +337,7 @@ modt.new_post = function(tag)
     return nil
 end
 
+-- Return the body of the post in the provided filename as rendered HTML.
 modt.markdown = function(filename)
     local f, err = io.open(filename, 'r')
     if not f then
@@ -347,6 +376,9 @@ modt.markdown = function(filename)
     return txt, nil
 end
 
+-- (Re-)write the HTML for the supplied post object. Objects for the next
+-- and previous post are required for the text that goes in the "next post"
+-- and "previous post" links. If either is nil, no link will be written.
 modt.render_post = function(this_post, prev_post, next_post)
     local subt = {}
     local err = nil
@@ -408,6 +440,8 @@ modt.render_post = function(this_post, prev_post, next_post)
     return nil
 end
 
+-- Write a preview for the provided post object to the provided open file
+-- handle. This should probably be the file handle to the "index.html" file.
 modt.render_preview = function(post, open_file)
 
     local subt = {}
@@ -438,6 +472,8 @@ modt.render_preview = function(post, open_file)
     return nil
 end
 
+-- Render the blog's index page. Arguments should be the return values of
+-- get_posts() and post_order(), respectively.
 modt.write_index = function(posts, post_order)
     local tgt_fname = http_dir .. 'index.html'
     local err = nil
@@ -478,6 +514,9 @@ modt.write_index = function(posts, post_order)
     return nil
 end
 
+-- Write the business content of the history page. Arguments are the
+-- return values of get_posts() and post_order(), as well as the open
+-- file handle to the history.html file being written.
 local function write_history_list(posts, post_order, open_file)
     local max_n = #post_order
     
@@ -522,6 +561,8 @@ local function write_history_list(posts, post_order, open_file)
 ]])
 end
 
+-- Write the history.html file with links to all the posts. Arguments are
+-- the return values of get_posts() and post_order().
 modt.write_history = function(posts, post_order)
     local hist_fname = http_dir .. 'history.html'
     local f, err = io.open(hist_fname, 'w')
@@ -550,6 +591,8 @@ modt.write_history = function(posts, post_order)
     return nil
 end
 
+-- Rerender all the HTML for every post, as well as the index and
+-- history pages.
 modt.update_all = function(posts, post_order)
     for n, tag in ipairs(post_order) do
         local prevp = posts[post_order[n+1]]
@@ -594,6 +637,12 @@ modt.update_all = function(posts, post_order)
     return nil
 end
 
+-- Rerender only some specified posts. The posts are specified by the
+-- update_ns argument, which is a list of the indices of the identifiers
+-- in the post_order argument of the posts that should be updated.
+-- This will also update pages with links to those posts: the ones
+-- bracketing each of them chronologically, as well as the index and
+-- history pages.
 modt.update_some = function(posts, post_order, update_ns)
     local update_index = false
     local to_update = {}
@@ -639,6 +688,9 @@ modt.update_some = function(posts, post_order, update_ns)
     return nil
 end
 
+-- Update all the posts whose "posts/identifier.md" files have been modified
+-- since the last call of "-u" or "-f". Also updates neighboring posts and
+-- index and history.
 modt.update_by_time = function(posts, post_order)
     local last_update_time, err = get_update_time()
     if not last_update_time then
@@ -695,6 +747,9 @@ modt.update_by_time = function(posts, post_order)
     return nil
 end
 
+-- Update specific posts as provided by arguments to "-u". Also updates
+-- neighboring posts and index and history, but does NOT modify the last
+-- update time, like a call to "-f" or "-u" without arguments does.
 modt.update_by_token = function(posts, post_order, tokens)
     for tok, _ in pairs(tokens) do
         if not posts[tok] then
