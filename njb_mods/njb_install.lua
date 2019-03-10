@@ -1,9 +1,9 @@
 --[[
     njb_install.lua
     
-    Module for installing njb.
+    Module for setting up a directory to hold blog data.
     
-    updated 2019-03-06
+    updated 2019-03-09
 --]]
 
 local errz = require 'njb_errors'
@@ -13,6 +13,9 @@ templater.errors = false
 
 local modt = {}
 
+-- Creates the appropriate subdirectories and copies all the default files
+-- and templates into the current directory so it can be used as a source
+-- for blog data.
 function modt.copy(cfgt)
     local temp_src   = cfgt['default_template_dir']
     local css_src    = cfgt['default_css_file']
