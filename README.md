@@ -117,3 +117,36 @@ you@webhost:~/blogdata$ njb -u first_post
 ```
 
 And you can force your entire blog to be rerendered with the `-f` option.
+
+### Customizing Your Blog
+
+As mentioned, you can edit the files in the `templates/` directory to change
+the appearance of your blog; this should be straightforward. It should also
+be pretty clear that the HTML-comment-looking constructs such as
+`<!-- ##CONTENT## -->` signal the template parser to insert the appropriate
+generated HTML, and that removing or mangling them will probably cause your
+blog to not display correctly. To maintain simplicity, `njb` does no checking
+or validation of the contents of these files, so you can definitely shoot
+yourself in the foot this way.
+
+One simple hook you can use is the `<!-- ##HEADER:## -->` parser directive.
+If what appears after the colon is the name of one of the headers in your
+post, the value of the header will be inserted there. (You may notice that
+this is how `njb` inserts the titles of your posts.) Only the `title:` and
+`time:` headers are required for your post to be displayed, but any number
+of arbitrary headers are allowed. Take the top of the following example
+post:
+
+```
+title:    Flux Quaz Blue
+time:     2019-03-10 12:34:56
+subtitle: <h3>The Legend of the Winged Frogs</h3>
+
+Once upon a time...
+```
+
+When writing the HTML for this post, if the parser encounters
+`<!-- ##HEADER:subtitle## -->` in the `post.html` template, it will get
+replaced by `<h3>The Legend of the Winged Frogs</h3>`. If the post had
+no `subtitle:` header, then the parser directive would be replaced by
+an empty string.
