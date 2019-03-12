@@ -183,7 +183,7 @@ local function barf_headers(headers)
     return table.concat(chunks, '\n')
 end
 
-mod_tab.barf = bar_headers
+mod_tab.barf = barf_headers
 
 return mod_tab
 ```
