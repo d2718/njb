@@ -129,7 +129,7 @@ blog to not display correctly. To maintain simplicity, `njb` does no checking
 or validation of the contents of these files, so you can definitely shoot
 yourself in the foot this way.
 
-One simple hook you can use is the `<!-- ##HEADER:## -->` parser directive.
+One simple hook you can use is the `<!-- ##HEADER:xyz## -->` parser directive.
 If what appears after the colon is the name of one of the headers in your
 post, the value of the header will be inserted there. (You may notice that
 this is how `njb` inserts the titles of your posts.) Only the `title:` and
@@ -150,3 +150,67 @@ When writing the HTML for this post, if the parser encounters
 replaced by `<h3>The Legend of the Winged Frogs</h3>`. If the post had
 no `subtitle:` header, then the parser directive would be replaced by
 an empty string.
+
+### More Involved Hooks
+
+If, while parsing one of the post templates (`post.html`, `prev.html`,
+`next.html`, or `home_link.html`), the `njb` encounters the parser directive
+`<!-- ##HOOK:xyz## -->`, it will attempt to load a library from the file
+`njb_hooks.lua` and call the function `xyz()` from it, with a table containing
+the post's headers as an argument.
+
+For example, consider:
+
+The file `njb_hooks.lua` in your blog directory (the one from which you're
+running `njb -u`):
+
+```lua
+-- njb_hooks.lua
+-- User-level njb library.
+
+local mod_tab = {}
+
+local function barf_headers(headers)
+    local chunks = { '<table class="headers">' }
+    
+    for key, val in pairs(headers) do
+        local line = string.format('  <tr><td>%s :</td><td>%s</td></tr>',
+                                   key, val)
+        table.insert(chunks, line)
+    end
+    
+    table.insert(chunks, '</table>')
+    return table.concat(chunks, '\n')
+end
+
+mod_tab.barf = barf_headers
+
+return mod_tab
+```
+
+The beginning of the post in question:
+
+```
+title:  Frogs of the Amazon
+time:   2019-03-15 15:16:17
+tags:   frogs, amphibians, rainforest, Amazon
+color:  blue
+
+Today I want to share with you one of my pseudoherpetological passions...
+```
+
+When the parser encounters `<!-- ##HOOK:barf## -->` in your edited copy
+of `post.html`, it will get replaced with something like
+
+```HTML
+<table class="headers">
+  <tr><td>title :</td><td>Frogs of the Amazon</td></tr>
+  <tr><td>time :</td><td>2019-03-15 15:16:17</td></tr>
+  <tr><td>tags :</td><td>frogs, amphibians, rainforest, Amazon</td></tr>
+  <tr><td>color :</td><td>blue</td></tr>
+</table>
+```
+
+If there are any hitches in this process, `njb` should complain in a Lua-y
+way on stderr and substitute an empty string in place of
+`<!-- ##HOOK:xyz##-- >`.
