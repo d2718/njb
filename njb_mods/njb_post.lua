@@ -4,7 +4,7 @@
     Module for dealing with posts. This is where the meat of the
     functionality is.
     
-    updated 2019-03-09
+    updated 2019-03-12
 --]]
 
 local dconfig   = require 'dconfig'
@@ -376,6 +376,39 @@ modt.markdown = function(filename)
     return txt, nil
 end
 
+-- Attempt to load, run, and return the value from a user-defined hook.
+modt.user_hook = function(arg, headers)
+    local ok, usrlib = pcall(require, 'njb_hooks')
+    if not ok then
+        errz.warn('WARNING: unable to load module "njb_hooks.lua": %s', usrlib)
+        return ''
+    end
+    if type(usrlib) ~= 'table' then
+        errz.warn('WARNING: requiring "njb_hooks.lua" returned %s',
+                  type(usrlib))
+        return ''
+    end
+    
+    local f = usrlib[arg]
+    if not f then
+        errz.warn('WARNING: no function %s(...) in module "njb_hooks.lua"', arg)
+        return ''
+    end
+    
+    local ok, txt = pcall(f, headers)
+    if ok then
+        if type(txt) == 'string' then
+            return txt
+        else
+            errz.warn('WARNING: call to %s(...) returned %s', arg, type(txt))
+            return ''
+        end
+    else
+        errz.warn('WARNING: call to %s(...) returned error: %s', arg, txt)
+        return ''
+    end
+end
+
 -- (Re-)write the HTML for the supplied post object. Objects for the next
 -- and previous post are required for the text that goes in the "next post"
 -- and "previous post" links. If either is nil, no link will be written.
@@ -397,7 +430,12 @@ modt.render_post = function(this_post, prev_post, next_post)
         return v or ''
     end
     
+    local function hook(arg)
+        return modt.user_hook(arg, this_post.headers)
+    end
+    
     subt['HEADER'] = headers
+    subt['HOOK']   = hook
     
     subt['PREV'] = ''
     subt['NEXT'] = ''
@@ -405,7 +443,8 @@ modt.render_post = function(this_post, prev_post, next_post)
     do
         local hst = {
             ['URL']    = http_root,
-            ['HEADER'] = headers
+            ['HEADER'] = headers,
+            ['HOOK']   = hook
         }
         subt['HOME'] = templater.afile('templates/home_link.html', hst)
     end
@@ -413,7 +452,8 @@ modt.render_post = function(this_post, prev_post, next_post)
         local pst = {
             ['URL']    = prev_post.url,
             ['TITLE']  = util.string_limit(prev_post.title, link_title_length),
-            ['HEADER'] = headers
+            ['HEADER'] = headers,
+            ['HOOK']   = hook
         }
         subt['PREV'] = templater.afile('templates/prev.html', pst)
     end
@@ -421,7 +461,8 @@ modt.render_post = function(this_post, prev_post, next_post)
         local nst = {
             ['URL']    = next_post.url,
             ['TITLE']  = util.string_limit(next_post.title, link_title_length),
-            ['HEADER'] = headers
+            ['HEADER'] = headers,
+            ['HOOK']   = hook
         }
         subt['NEXT'] = templater.afile('templates/next.html', nst)
     end
