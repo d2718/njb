@@ -24,6 +24,7 @@ Edit the table in the file `njb_mods/njb_config.lua` to point to where
 you put everything in the previous steps. If you have something like
 Pandoc installed, you can set the `'markdown_render_cmd'` to use that
 instead of `cmark`. (This is especially useful if you lack `cmark`.)
+You can also use the custom `njbrender` markdown renderer (see below).
 
 If you stuck the Lua packages in `njb_mods/` somewhere Lua normally
 looks for packages, you can set the `NJB_MODS_DIR` variable near the top
@@ -32,6 +33,23 @@ the contents of `njb_mods/`.
 
 Finally stick `njb.lua` somewhere executable and mark it so. Bonus points
 for removing the file extension.
+
+### Syntax Highlighting
+
+`njbrender.go` is a custom markdown renderer that also does syntax
+highlighting. It's a very simple mating of the two Go libraries you will
+need in order to compile it:
+
+  * [gomarkdown](https://github.com/gomarkdown/markdown)
+  * [chroma](https://github.com/alecthomas/chroma)
+
+If you want syntax highlighting to be available to your users, you will
+have to build and install this (or some other) markdown renderer. After
+`go get`ting the two aforementioned libraries, it should just `go build`.
+
+Point the `markdown_render_cmd` value (from `njb_mods/njb_config.lua`)
+at your new renderer, and make `syntax.css` available to your users
+(although they can always just grab it from here).
 
 ## Use for Users
 
@@ -214,3 +232,15 @@ of `post.html`, it will get replaced with something like
 If there are any hitches in this process, `njb` should complain in a Lua-y
 way on stderr and substitute an empty string in place of
 `<!-- ##HOOK:xyz##-- >`.
+
+### Syntax Highlighting
+
+If the system administrator has compiled and installed the custom markdown
+renderer, you can set your `MARKDOWN_COMMAND` configuration option to point
+to that executable (the path will probably end in `...njbrender`). You will
+also need a stylesheet to supply style information for the output of
+`njbrender`'s code blocks. The
+[syntax.css](https://github.com/d2718/njb/blob/master/syntax.css) file from
+this repository is a good starting point. Tweak it to your liking and
+edit the `<head> ... </head>` section of your `templates/post.html` template
+to include a link to it.

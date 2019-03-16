@@ -1,0 +1,101 @@
+/* njb default syntax highlighting styles */
+
+/* comments */
+pre.chroma .c,      /* comment */
+pre.chroma .ch,     /* comment hashbang */
+pre.chroma .c1,     /* comment single */
+pre.chroma .cs,     /* comment special */
+pre.chroma .cm      /* comment multiline */
+    { color: #666; }
+
+/* error */ pre.chroma span.err { color: #822; }
+
+/* line numbering */
+pre.chroma .lntd,       /* line table TD */
+pre.chroma .lntable,    /* line table */
+pre.chroma .lnt,        /* line numbers table */
+pre.chroma .ln          /* line numbers */
+    { /* no rules */ }
+
+/* line highlight */ pre.chroma .hl { /* no rules */ }
+
+/* preprocessor */
+pre.chroma .cp      /* comment preprocessor */
+    { color: #484; }
+pre.chroma .cpf     /* comment preprocessor file */
+    { color: #642; }
+
+/* whitespace */ pre.chroma .w { /* no rules */ }
+
+/* brackets */ pre.chroma .p { /* no rules */ }
+
+/* keywords */
+pre.chroma .k,      /* keyword */
+pre.chroma .kc      /* keyword constant */
+pre.chroma .kd,     /* keyword declaration */
+pre.chroma .kn,     /* keyword namespace */
+pre.chroma .kp,     /* keyword pseudo */
+pre.chroma .kr,     /* keyword reserved */
+pre.chroma .kt      /* keyword type */
+    { font-weight: bold; }
+
+/* names */
+pre.chroma .na,     /* name attribute */
+pre.chroma .nb,     /* name builtin */
+pre.chroma .bp,     /* name builtin pseudo */
+pre.chroma .nc,     /* name class */
+pre.chroma .no,     /* name constant */
+pre.chroma .nd,     /* name decorator */
+pre.chroma .ni,     /* name entity */
+pre.chroma .ne,     /* name exception */
+pre.chroma .nf,     /* name function */
+pre.chroma .nl,     /* name label */
+pre.chroma .nn,     /* name namespace */
+pre.chroma .nt,     /* name tag */
+pre.chroma .nv,     /* name variable */
+pre.chroma .vc,     /* name variable class */
+pre.chroma .vg,     /* name variable global */
+pre.chroma .vi      /* name variable instance */
+    { /* no rules */ }
+
+/* literals */
+pre.chroma .m,      /* literal number */
+pre.chroma .mb,     /* literal number binary */
+pre.chroma .mf,     /* literal number float */
+pre.chroma .mi,     /* literal number integer */
+pre.chroma .mh,     /* literal number hex */ 
+pre.chroma .il,     /* literal number long integer */
+pre.chroma .mo,     /* literal number octal */     
+pre.chroma .s,      /* literal string */
+pre.chroma .sa,     /* literal string affix */
+pre.chroma .sb,     /* literal string backtick */
+pre.chroma .sc,     /* literal string char */
+pre.chroma .dl,     /* literal string delimiter */
+pre.chroma .sd,     /* literal string doc */
+pre.chroma .se      /* literal string escape */
+pre.chroma .sh,     /* literal string heredoc */
+pre.chroma .si,     /* literal string interpolate */
+pre.chroma .sx,     /* literal string other */
+pre.chroma .sr,     /* literal string regex */
+pre.chroma .s2,     /* literal string double */
+pre.chroma .s1,     /* literal string single */
+pre.chroma .ss      /* literal string symbol */
+    { color: #848; }
+
+/* operators */
+pre.chroma .o,      /* operator */
+pre.chroma .ow      /* operator word */
+    { /* no rules */ }
+
+/* generics */
+pre.chroma .gd,     /* generic deleted */
+pre.chroma .ge,     /* generic emphasis */
+pre.chroma .gr,     /* generic error */
+pre.chroma .gh,     /* generic heading */
+pre.chroma .gi,     /* generic inserted */
+pre.chroma .go,     /* generic output */
+pre.chroma .gp,     /* generic prompt */
+pre.chroma .gs,     /* generic strong */
+pre.chroma .gu,     /* generic subheading */
+pre.chroma .gt      /* generic traceback */
+    { /* no rules */ }
