@@ -83,7 +83,8 @@ elseif action == 'list' then
     
     local post_keys = posts.post_order(post_tabs)
     if cfgt.list_with_column then
-        local cpipe, err = io.popen('column -s / -t', 'w')
+        local cold = '\205\173' -- some obscure combining diacritic
+        local cpipe, err = io.popen('column -s ' .. cold .. ' -t', 'w')
         if not cpipe then
             errz.die('Error opening `column` for output: %s', err)
         end
@@ -91,8 +92,8 @@ elseif action == 'list' then
             local p = post_tabs[k]
             local tstr = '                   '
             if p.time then tstr = os.date(posts.INTERNAL_TIME, p.time) end
-            local chunk = string.format('%s/%s/%s\n',
-                k, tstr, p['title'] or ' ')
+            local chunk = string.format('%s%s%s%s%s\n',
+                k, cold, tstr, cold, p['title'] or ' ')
             cpipe:write(chunk)
         end
         cpipe:close()
