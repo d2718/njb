@@ -82,7 +82,7 @@ elseif action == 'list' then
     end
     
     local post_keys = posts.post_order(post_tabs)
-    if os.execute('which column') == 0 then
+    if cfgt.list_with_column then
         local cpipe, err = io.popen('column -s / -t', 'w')
         if not cpipe then
             errz.die('Error opening `column` for output: %s', err)
