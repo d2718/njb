@@ -10,7 +10,8 @@
     last update: 2019-03-07
 --]]
 
-local NJB_MODS_DIR = '/usr/local/etc/njb/njb_mods/?.lua'
+-- local NJB_MODS_DIR = '/usr/local/etc/njb/njb_mods/?.lua'
+local NJB_MODS_DIR = '/home/dan/dev/njb/njb_mods/?.lua'
 
 if NJB_MODS_DIR then
     package.path = package.path .. ';' .. NJB_MODS_DIR
@@ -81,13 +82,29 @@ elseif action == 'list' then
     end
     
     local post_keys = posts.post_order(post_tabs)
-    for _, k in ipairs(post_keys) do
-        local p = post_tabs[k]
-        local tstr = '                   '
-        if p.time then tstr = os.date(posts.INTERNAL_TIME, p.time) end
-        local chunk = string.format('%s  %s  %s\n',
-            k, tstr, p['title'] or ' ')
-        io.stdout:write(chunk)
+    if os.execute('which column') == 0 then
+        local cpipe, err = io.popen('column -s / -t', 'w')
+        if not cpipe then
+            errz.die('Error opening `column` for output: %s', err)
+        end
+        for _, k in ipairs(post_keys) do
+            local p = post_tabs[k]
+            local tstr = '                   '
+            if p.time then tstr = os.date(posts.INTERNAL_TIME, p.time) end
+            local chunk = string.format('%s/%s/%s\n',
+                k, tstr, p['title'] or ' ')
+            cpipe:write(chunk)
+        end
+        cpipe:close()
+    else
+        for _, k in ipairs(post_keys) do
+            local p = post_tabs[k]
+            local tstr = '                   '
+            if p.time then tstr = os.date(posts.INTERNAL_TIME, p.time) end
+            local chunk = string.format('%s\t%s\t%s\n',
+                k, tstr, p['title'] or ' ')
+            io.stdout:write(chunk)
+        end
     end
 
 elseif action == 'force' then

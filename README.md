@@ -36,6 +36,12 @@ for removing the file extension.
 
 ### Syntax Highlighting
 
+The whole goal of `njb` is a sort of Spartan austerity: a few dozen KB of
+Lua scripts plus a couple of external utilities that are more or less
+guaranteed to be on your web server. Supporting syntax highlighting
+introduces a 7.5 MB Go executable and some extra complications, but I really
+like syntax highlighting. It is therefore available, yet entirely optional.
+
 `njbrender.go` is a custom markdown renderer that also does syntax
 highlighting. It's a very simple mating of the two Go libraries you will
 need in order to compile it:
