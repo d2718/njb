@@ -22,6 +22,10 @@ local cfg_t = {
     -- Whether the utility column(1) should be used to format the output
     -- of njb -l / --list.
     ['list_with_column']     = true,
+    -- Character to use as a column separator when formatting output with
+    -- column(1). Some obscure, stratospheric unicode character is
+    -- recommended, but this may not work on all systems.
+    ['column_delimiter']     = '\205\173',
 }
 
 return cfg_t
