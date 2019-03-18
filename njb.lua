@@ -83,7 +83,7 @@ elseif action == 'list' then
     
     local post_keys = posts.post_order(post_tabs)
     if cfgt.list_with_column then
-        local cold = '\205\173' -- some obscure combining diacritic
+        local cold = cfgt['column_delimiter']
         local cpipe, err = io.popen('column -s ' .. cold .. ' -t', 'w')
         if not cpipe then
             errz.die('Error opening `column` for output: %s', err)
@@ -95,6 +95,7 @@ elseif action == 'list' then
             local chunk = string.format('%s%s%s%s%s\n',
                 k, cold, tstr, cold, p['title'] or ' ')
             cpipe:write(chunk)
+            print(chunk)
         end
         cpipe:close()
     else
