@@ -95,7 +95,6 @@ elseif action == 'list' then
             local chunk = string.format('%s%s%s%s%s\n',
                 k, cold, tstr, cold, p['title'] or ' ')
             cpipe:write(chunk)
-            print(chunk)
         end
         cpipe:close()
     else
