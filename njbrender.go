@@ -69,7 +69,7 @@ func main() {
         os.Exit(-1)
     }
     
-    var extensions = parser.Tables | parser.FencedCode |
+    var extensions = parser.Tables | parser.FencedCode | parser.Footnotes |
                      parser.Strikethrough | parser.SpaceHeadings |
                      parser.HeadingIDs | parser.BackslashLineBreak |
                      parser.DefinitionLists | parser.OrderedListStart |
