@@ -2,7 +2,8 @@
 //
 // Custom markdown renderer for njb.
 //
-// 2019-03-15
+// 2021-02-23
+// (updated to stay in line with small chroma API change)
 //
 package main
 
@@ -21,7 +22,7 @@ var fmtr chroma.Formatter
 var isSetup bool = false
 
 func setupSyntax() error {
-    fmtr = chtml.New(chtml.WithClasses(), chtml.TabWidth(4))
+    fmtr = chtml.New(chtml.WithClasses(true), chtml.TabWidth(4))
     if fmtr == nil {
         return fmt.Errorf("Unable to setup output formatter.")
     } else {
