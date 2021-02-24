@@ -70,13 +70,14 @@ func main() {
         os.Exit(-1)
     }
     
-    var extensions = parser.Tables | parser.FencedCode |
+    extensions := parser.Tables | parser.FencedCode | parser.Footnotes |
                      parser.Strikethrough | parser.SpaceHeadings |
                      parser.HeadingIDs | parser.BackslashLineBreak |
                      parser.DefinitionLists | parser.OrderedListStart |
                      parser.SuperSubscript | parser.MathJax
-    var htmlFlags = html.FootnoteReturnLinks | html.Smartypants |
-                    html.SmartypantsFractions | html.SmartypantsLatexDashes
+    htmlFlags := html.CommonFlags | html.FootnoteReturnLinks
+    // This includes html.Smartypants | html.SmartypantsFractions |
+    //               html.SmartypantsLatexDashes
     params := html.RendererOptions{
                 Flags: htmlFlags,
                 RenderNodeHook: renderHookCodeInfo,
